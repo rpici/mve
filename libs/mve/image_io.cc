@@ -14,6 +14,7 @@
 #include <cstdarg>
 #include <cstring>
 #include <cerrno>
+#include <sstream>
 
 #ifndef MVE_NO_PNG_SUPPORT
 #   include <png.h>
@@ -45,6 +46,8 @@
 #define MVEI_FILE_SIGNATURE "\211MVE_IMAGE\n"
 #define MVEI_FILE_SIGNATURE_LEN 11
 #define MVEI_MAX_PIXEL_AMOUNT (16384 * 16384) /* 2^28 */
+
+using std::ostringstream;
 
 MVE_NAMESPACE_BEGIN
 MVE_IMAGE_NAMESPACE_BEGIN
@@ -100,7 +103,10 @@ load_file (std::string const& filename)
         throw util::Exception(filename + ": ", e.what());
     }
 
-    throw util::Exception(filename, ": Cannot determine image format");
+    ostringstream ss;
+    ss << __FILE__ << ": " << __FUNCTION__ << ": Cannot determine image format";
+
+    throw util::Exception( filename, ": " + ss.str() );
 }
 
 ImageHeaders
@@ -132,7 +138,10 @@ load_file_headers (std::string const& filename)
         throw util::Exception(filename + ": ", e.what());
     }
 
-    throw util::Exception(filename, ": Cannot determine image format");
+    ostringstream ss;
+    ss << __FILE__ << ": " << __FUNCTION__ << ": Cannot determine image format";
+
+    throw util::Exception( filename, ": " + ss.str() );
 }
 
 void
