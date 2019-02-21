@@ -15,6 +15,7 @@
 #include <cstring>
 #include <cerrno>
 #include <sstream>
+#include <iostream>
 
 #ifndef MVE_NO_PNG_SUPPORT
 #   include <png.h>
@@ -48,6 +49,7 @@
 #define MVEI_MAX_PIXEL_AMOUNT (16384 * 16384) /* 2^28 */
 
 using std::ostringstream;
+using std::cerr;
 
 MVE_NAMESPACE_BEGIN
 MVE_IMAGE_NAMESPACE_BEGIN
@@ -300,20 +302,30 @@ load_png_file (std::string const& filename)
     }
 
     /* Apply transformations. */
+    cerr << __LINE__ << ": calling png_get_color_type()...\n";
     int const color_type = png_get_color_type(png, png_info);
+    
+    cerr << __LINE__ << ": checking color_type...\n";
     if (color_type == PNG_COLOR_TYPE_PALETTE)
         png_set_palette_to_rgb(png);
     if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
         png_set_expand_gray_1_2_4_to_8(png);
+    
+    cerr << __LINE__ << ": calling png_get_valid()...\n";
+    
     if (png_get_valid(png, png_info, PNG_INFO_tRNS))
         png_set_tRNS_to_alpha(png);
-
+    
+    cerr << __LINE__ << ": calling png_read_update_info()...\n";
     /* Update the info struct to reflect the transformations. */
     png_read_update_info(png, png_info);
 
     /* Create image. */
     ByteImage::Ptr image = ByteImage::create();
+    cerr << __LINE__ << ": calling ByteImage::Ptr->allocate()...\n";
     image->allocate(headers.width, headers.height, headers.channels);
+    
+    cerr << __LINE__ << ": calling image->get_data()...\n";
     ByteImage::ImageData& data = image->get_data();
 
     /* Setup row pointers. */
@@ -322,13 +334,18 @@ load_png_file (std::string const& filename)
     for (int i = 0; i < headers.height; ++i)
         row_pointers[i] = &data[i * headers.width * headers.channels];
 
+    cerr << __LINE__ << ": calling png_read_image()...\n";
     /* Read the whole PNG in memory. */
     png_read_image(png, &row_pointers[0]);
 
+    cerr << __LINE__ << ": calling png_destroy_read_struct()...\n";
     /* Clean up. */
     png_destroy_read_struct(&png, &png_info, nullptr);
+    
+    cerr << __LINE__ << ": calling fclose(fp)...\n";
     std::fclose(fp);
-
+    
+    cerr << __LINE__ << ": returning image...\n";
     return image;
 }
 
