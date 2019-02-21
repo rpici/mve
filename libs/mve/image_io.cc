@@ -275,6 +275,8 @@ namespace
             std::fclose(fp);
             throw util::Exception("PNG with unknown bit depth");
         }
+        
+        cerr << __FILE__ << ": " << __FUNCTION__ << ": bit_depth = " << bit_depth << "\n";
     }
 }
 
@@ -322,6 +324,11 @@ load_png_file (std::string const& filename)
 
     /* Create image. */
     ByteImage::Ptr image = ByteImage::create();
+    cerr << __LINE__ << ": headers.width, headers.height, headers.channels = "
+        << headers.width << ", "
+        << headers.height << ", "
+        << headers.channels
+        << "\n";
     cerr << __LINE__ << ": calling ByteImage::Ptr->allocate()...\n";
     image->allocate(headers.width, headers.height, headers.channels);
     
