@@ -356,6 +356,15 @@ load_png_file (std::string const& filename)
     return image;
 }
 
+RawImage::Ptr
+load_png_16_file (std::string const& filename)
+{
+    ostringstream ss;
+    ss << __PRETTY_FUNCTION__ << ": not yet implemented!";
+    throw util::Exception{ ss.str() };
+    return {};
+}
+
 ImageHeaders
 load_png_file_headers (std::string const& filename)
 {
@@ -455,6 +464,18 @@ save_png_file (ByteImage::ConstPtr image,
     /* Cleanup. */
     png_destroy_write_struct(&png_ptr, &info_ptr);
     std::fclose(fp);
+}
+
+void
+save_png_16_file (
+    RawImage::ConstPtr image,
+    std::string const& filename,
+    const int compression_level
+)
+{
+    ostringstream ss;
+    ss << __PRETTY_FUNCTION__ << ": not yet implemented!";
+    throw util::Exception{ ss.str() };
 }
 
 #endif /* MVE_NO_PNG_SUPPORT */
