@@ -118,6 +118,17 @@ void
 save_png_file (ByteImage::ConstPtr image,
     std::string const& filename, int compression_level = 1);
 
+
+RawImage::Ptr
+load_png_16_file (std::string const& filename);
+
+void
+save_png_16_file (
+	RawImage::ConstPtr image,
+    std::string const& filename,
+    int compression_level = 1
+);
+
 #endif /* MVE_NO_PNG_SUPPORT */
 
 /* ------------------------- JPEG support ------------------------- */
