@@ -214,6 +214,22 @@ TEST( ImageFileTest, PNG16Save )
     EXPECT_TRUE( true );
 }
 
+TEST( ImageFileTest, PNG16LoadSaveLoad )
+{
+    //The following file must exist in the directory from which the test is run:
+    const auto filenameOfExisting16UC3png = "16UC3.png";
+
+    const auto originalImage = mve::image::load_png_16_file( filenameOfExisting16UC3png );
+
+    const auto filenameOfCopyOf16UC3png = "16UC3_copy.png";
+
+    mve::image::save_png_16_file( originalImage, filenameOfCopyOf16UC3png );
+
+    const auto copyOfImage = mve::image::load_png_16_file( filenameOfCopyOf16UC3png );
+
+    EXPECT_TRUE( compare_exact<uint16_t>( originalImage, copyOfImage ) );
+}
+
 TEST( ImageFileTest, PNG16ExceptionTryingToLoad8bitAs16bit )
 {
     TempFile filename{ "png8test" };
