@@ -182,20 +182,20 @@ TEST(ImageFileTest, PNGLoadHeaders)
     EXPECT_EQ(img1->get_type(), headers.type);
 }
 
-TEST(ImageFileTest, PNG16SaveLoad)
+TEST( ImageFileTest, PNG16SaveLoad )
 {
-    TempFile filename("png16test");
+    TempFile filename{ "png16test" };
     mve::RawImage::Ptr img1, img2;
 
-    img1 = make_raw_image(123, 255, 1);
-    mve::image::save_png_16_file(img1, filename);
-    img2 = mve::image::load_png_16_file(filename);
-    EXPECT_TRUE(compare_exact<uint16_t>(img1, img2));
+    img1 = make_raw_image( 123, 255, 1 );
+    mve::image::save_png_16_file( img1, filename );
+    img2 = mve::image::load_png_16_file( filename );
+    EXPECT_TRUE( compare_exact<uint16_t>( img1, img2 ) );
 
-    img1 = make_raw_image(155, 324, 3);
-    mve::image::save_png_16_file(img1, filename);
-    img2 = mve::image::load_png_16_file(filename);
-    EXPECT_TRUE(compare_exact<uint16_t>(img1, img2));
+    img1 = make_raw_image( 155, 324, 3 );
+    mve::image::save_png_16_file( img1, filename );
+    img2 = mve::image::load_png_16_file( filename );
+    EXPECT_TRUE( compare_exact<uint16_t>( img1, img2 ) );
 }
 #endif //MVE_NO_PNG_SUPPORT
 
