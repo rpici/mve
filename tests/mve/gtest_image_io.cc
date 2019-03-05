@@ -7,6 +7,7 @@
 #include <gtest/gtest.h>
 
 #include "util/file_system.h"
+#include "util/exception.h"
 #include "mve/image.h"
 #include "mve/image_io.h"
 
@@ -197,6 +198,36 @@ TEST( ImageFileTest, PNG16SaveLoad )
     img2 = mve::image::load_png_16_file( filename );
     EXPECT_TRUE( compare_exact<uint16_t>( img1, img2 ) );
 }
+
+TEST( ImageFileTest, PNG16Save )
+{
+    {
+        const auto filename1 = "png16UC1_123x255_testSave.png";
+        const auto img1 = make_raw_image( 123, 255, 1 );
+        mve::image::save_png_16_file( img1, filename1 );
+    }
+    {
+        const auto filename2 = "png16UC3_155x324_testSave.png";
+        const auto img2 = make_raw_image( 155, 324, 3 );
+        mve::image::save_png_16_file( img2, filename2 );
+    }
+    EXPECT_TRUE( true );
+}
+
+TEST( ImageFileTest, PNG16ExceptionTryingToLoad8bitAs16bit )
+{
+    TempFile filename{ "png8test" };
+    mve::ByteImage::Ptr img1;
+
+    img1 = make_byte_image( 256, 255, 1 );
+    mve::image::save_png_file( img1, filename );
+
+    EXPECT_THROW(
+        mve::image::load_png_16_file( filename ),
+        util::Exception
+    );
+}
+
 #endif //MVE_NO_PNG_SUPPORT
 
 TEST(ImageFileTest, PPMSaveLoad)
