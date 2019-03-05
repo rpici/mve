@@ -359,10 +359,61 @@ load_png_file (std::string const& filename)
 RawImage::Ptr
 load_png_16_file (std::string const& filename)
 {
-    ostringstream ss;
-    ss << __PRETTY_FUNCTION__ << ": not yet implemented!";
-    throw util::Exception{ ss.str() };
-    return {};
+    // TODO: use throw-safe FILE* wrapper
+    FILE* fp = std::fopen(filename.c_str(), "rb");
+    if (fp == nullptr)
+        throw util::FileException(filename, std::strerror(errno));
+
+    /* Read PNG header info. */
+    ImageHeaders headers;
+    png_structp png = nullptr;
+    png_infop png_info = nullptr;
+    load_png_headers_intern(fp, &headers, &png, &png_info);
+
+    /* Check if bit depth is valid. */
+    int const bit_depth = png_get_bit_depth(png, png_info);
+    if (bit_depth != 16)
+    {
+        png_destroy_read_struct(&png, &png_info, nullptr);
+        std::fclose(fp);
+        throw util::Exception("expected a PNG with bit depth of 16");
+    }
+
+    cerr << __LINE__ << ": headers.width, headers.height, headers.channels = "
+        << headers.width << ", "
+        << headers.height << ", "
+        << headers.channels
+        << "\n";
+
+    /* Create image. */
+    RawImage::Ptr image = RawImage::create(
+        headers.width,
+        headers.height,
+        headers.channels
+    );
+    
+    cerr << __LINE__ << ": calling image->get_data()...\n";
+    RawImage::ImageData& data = image->get_data();
+
+    /* Setup row pointers. */
+    std::vector<png_bytep> row_pointers;
+    row_pointers.resize(headers.height);
+    for (int i = 0; i < headers.height; ++i)
+        row_pointers[i] = reinterpret_cast<png_bytep>( &data[i * headers.width * headers.channels] );
+
+    cerr << __LINE__ << ": calling png_read_image()...\n";
+    /* Read the whole PNG in memory. */
+    png_read_image(png, &row_pointers[0]);
+
+    cerr << __LINE__ << ": calling png_destroy_read_struct()...\n";
+    /* Clean up. */
+    png_destroy_read_struct(&png, &png_info, nullptr);
+    
+    cerr << __LINE__ << ": calling fclose(fp)...\n";
+    std::fclose(fp);
+    
+    cerr << __LINE__ << ": returning image...\n";
+    return image;
 }
 
 ImageHeaders
@@ -473,9 +524,84 @@ save_png_16_file (
     const int compression_level
 )
 {
-    ostringstream ss;
-    ss << __PRETTY_FUNCTION__ << ": not yet implemented!";
-    throw util::Exception{ ss.str() };
+    if (image == nullptr)
+        throw std::invalid_argument("Null image given");
+
+    FILE *fp = std::fopen(filename.c_str(), "wb");
+    if (!fp)
+        throw util::FileException(filename, std::strerror(errno));
+
+    //png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING,
+    //    (png_voidp)user_error_ptr, user_error_fn, user_warning_fn);
+    png_structp png_ptr = png_create_write_struct
+        (PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
+
+    if (!png_ptr)
+    {
+        std::fclose(fp);
+        throw util::Exception("Out of memory");
+    }
+
+    png_infop info_ptr = png_create_info_struct(png_ptr);
+    if (!info_ptr)
+    {
+        png_destroy_write_struct(&png_ptr, (png_infopp)nullptr);
+        std::fclose(fp);
+        throw util::Exception("Out of memory");
+    }
+
+    png_init_io(png_ptr, fp);
+
+    // void write_row_callback(png_ptr, png_uint_32 row, int pass);
+    //png_set_write_status_fn(png_ptr, write_row_callback);
+
+    /* Determine color type to be written. */
+    int color_type;
+    switch (image->channels())
+    {
+        case 1: color_type = PNG_COLOR_TYPE_GRAY; break;
+        case 2: color_type = PNG_COLOR_TYPE_GRAY_ALPHA; break;
+        case 3: color_type = PNG_COLOR_TYPE_RGB; break;
+        case 4: color_type = PNG_COLOR_TYPE_RGB_ALPHA; break;
+        default:
+        {
+            png_destroy_write_struct(&png_ptr, &info_ptr);
+            std::fclose(fp);
+            throw util::Exception("Cannot determine image color type");
+        }
+    }
+
+    /* Set compression level (6 seems to be the default). */
+    png_set_compression_level(png_ptr, compression_level);
+
+    /* Write image. */
+    png_set_IHDR(png_ptr, info_ptr, image->width(), image->height(),
+        16 /* Bit depth */, color_type, PNG_INTERLACE_NONE,
+        PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+
+    /* Setup row pointers. */
+    std::vector<png_bytep> row_pointers;
+    row_pointers.resize(image->height());
+    RawImage::ImageData const& data = image->get_data();
+    for (int i = 0; i < image->height(); ++i)
+        row_pointers[i] = reinterpret_cast<png_bytep>(
+            const_cast<uint16_t*>(
+                &data[i * image->width() * image->channels()]
+            )
+        );
+
+    /* Setup transformations. */
+    int png_transforms = PNG_TRANSFORM_IDENTITY;
+    //png_transforms |= PNG_TRANSFORM_INVERT_ALPHA;
+
+    /* Write to file. */
+    png_set_rows(png_ptr, info_ptr, &row_pointers[0]);
+    png_write_png(png_ptr, info_ptr, png_transforms, nullptr);
+    png_write_end(png_ptr, info_ptr);
+
+    /* Cleanup. */
+    png_destroy_write_struct(&png_ptr, &info_ptr);
+    std::fclose(fp);
 }
 
 #endif /* MVE_NO_PNG_SUPPORT */
