@@ -296,7 +296,7 @@ load_png_file (std::string const& filename)
 
     /* Check if bit depth is valid. */
     int const bit_depth = png_get_bit_depth(png, png_info);
-    if (false && bit_depth > 8)
+    if (bit_depth > 8)
     {
         png_destroy_read_struct(&png, &png_info, nullptr);
         std::fclose(fp);
