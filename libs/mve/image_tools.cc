@@ -72,6 +72,23 @@ float_to_byte_image (FloatImage::ConstPtr image, float vmin, float vmax)
     return img;
 }
 
+RawImage::Ptr
+float_to_raw_image (FloatImage::ConstPtr image, float vmin, float vmax)
+{
+    if (image == nullptr)
+        throw std::invalid_argument("Null image given");
+
+    RawImage::Ptr img = RawImage::create();
+    img->allocate(image->width(), image->height(), image->channels());
+    for (int i = 0; i < image->get_value_amount(); ++i)
+    {
+        float value = std::min(vmax, std::max(vmin, image->at(i)));
+        value = 65535.0f * (value - vmin) / (vmax - vmin);
+        img->at(i) = static_cast<uint16_t>(value + 0.5f);
+    }
+    return img;
+}
+
 /* ---------------------------------------------------------------- */
 
 ByteImage::Ptr

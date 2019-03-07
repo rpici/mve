@@ -49,6 +49,10 @@ ByteImage::Ptr
 float_to_byte_image (FloatImage::ConstPtr image,
     float vmin = 0.0f, float vmax = 1.0f);
 
+RawImage::Ptr
+float_to_raw_image (FloatImage::ConstPtr image,
+    float vmin = 0.0f, float vmax = 1.0f);
+
 /**
  * Converts a given double image to a byte image.
  * This is done by clamping values to [vmin, vmax] and scaling to [0, 255].
