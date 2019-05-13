@@ -199,6 +199,45 @@ TEST( ImageFileTest, PNG16SaveLoad )
     EXPECT_TRUE( compare_exact<uint16_t>( img1, img2 ) );
 }
 
+#include <opencv2/opencv.hpp>
+
+namespace
+{
+    void display( mve::RawImage& rawImage, const std::string& filename )
+    {
+        const auto height = rawImage.height();
+        const auto width  = rawImage.width();
+        const auto type   = CV_16UC3;
+
+        auto image = cv::Mat{
+            height,
+            width,
+            type,
+            rawImage.get_byte_pointer()
+        };
+
+        //PNG is in RGB, but cv::Mat by default assumes its data is in BGR so convert it:
+        cv::cvtColor( image, image, CV_RGB2BGR );
+
+        cv::namedWindow( filename, cv::WINDOW_AUTOSIZE );  // Create a window for display.
+        cv::imshow( filename, image );                 // Show our image inside it.
+
+        cv::waitKey( 0 );                                      // Wait for a keystroke in the window
+    }
+} //namespace
+
+TEST( ImageFileTest, PNG16Load )
+{
+    //The following file must exist in the directory from which the test is run:
+    const auto filenameOfExisting16UC3png = "16UC3.png";
+
+    auto image = mve::image::load_png_16_file( filenameOfExisting16UC3png );
+
+    display( *image, filenameOfExisting16UC3png );
+
+    EXPECT_TRUE( true );
+}
+
 TEST( ImageFileTest, PNG16Save )
 {
     {

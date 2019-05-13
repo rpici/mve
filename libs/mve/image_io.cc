@@ -401,6 +401,11 @@ load_png_16_file (std::string const& filename)
     for (int i = 0; i < headers.height; ++i)
         row_pointers[i] = reinterpret_cast<png_bytep>( &data[i * headers.width * headers.channels] );
 
+#if 1
+    cerr << __LINE__ << ": calling png_set_swap()...\n";
+    png_set_swap( png );
+#endif
+
     cerr << __LINE__ << ": calling png_read_image()...\n";
     /* Read the whole PNG in memory. */
     png_read_image(png, &row_pointers[0]);
@@ -591,7 +596,11 @@ save_png_16_file (
         );
 
     /* Setup transformations. */
+#if 0
     int png_transforms = PNG_TRANSFORM_IDENTITY;
+#else
+    int png_transforms = PNG_TRANSFORM_SWAP_ENDIAN;
+#endif
     //png_transforms |= PNG_TRANSFORM_INVERT_ALPHA;
 
     /* Write to file. */

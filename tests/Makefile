@@ -8,6 +8,9 @@ INCLUDES = -I${MVE_ROOT}/libs -I${GTEST_PATH}/include
 CXXWARNINGS = -Wall -Wextra -pedantic -Wno-sign-compare
 CXXFLAGS = -std=c++11 -pthread ${CXXWARNINGS} ${INCLUDES}
 LDLIBS += -lpng -ltiff -ljpeg -Wl,-Bstatic -lgtest -lgtest_main -lgmock -lgmock_main -Wl,-Bdynamic
+LDLIBS += -lopencv_core
+LDLIBS += -lopencv_highgui
+LDLIBS += -lopencv_imgproc
 
 test: ${SOURCES:.cc=.o} libmve_fssr.a libmve_sfm.a libmve.a libmve_util.a
 	${LINK.cc} -o $@ $^ ${LDLIBS}
