@@ -356,6 +356,10 @@ load_png_file (std::string const& filename)
     return image;
 }
 
+#if 0
+#   define TRY_FLIPPING_16BIT_ENDIANNESS_WHEN_LOADING_AND_SAVING
+#endif
+
 RawImage::Ptr
 load_png_16_file (std::string const& filename)
 {
@@ -401,7 +405,7 @@ load_png_16_file (std::string const& filename)
     for (int i = 0; i < headers.height; ++i)
         row_pointers[i] = reinterpret_cast<png_bytep>( &data[i * headers.width * headers.channels] );
 
-#if 1
+#ifdef TRY_FLIPPING_16BIT_ENDIANNESS_WHEN_LOADING_AND_SAVING
     cerr << __LINE__ << ": calling png_set_swap()...\n";
     png_set_swap( png );
 #endif
@@ -596,10 +600,11 @@ save_png_16_file (
         );
 
     /* Setup transformations. */
-#if 0
-    int png_transforms = PNG_TRANSFORM_IDENTITY;
-#else
+#ifdef TRY_FLIPPING_16BIT_ENDIANNESS_WHEN_LOADING_AND_SAVING
     int png_transforms = PNG_TRANSFORM_SWAP_ENDIAN;
+#else
+    
+    int png_transforms = PNG_TRANSFORM_IDENTITY;
 #endif
     //png_transforms |= PNG_TRANSFORM_INVERT_ALPHA;
 
