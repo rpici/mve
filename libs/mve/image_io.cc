@@ -356,7 +356,7 @@ load_png_file (std::string const& filename)
     return image;
 }
 
-#if 0
+#if 1
 #   define TRY_FLIPPING_16BIT_ENDIANNESS_WHEN_LOADING_AND_SAVING
 #endif
 
